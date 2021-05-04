@@ -1,24 +1,45 @@
+import { LambdaRestApi } from '@aws-cdk/aws-apigateway';
+import { Bucket } from '@aws-cdk/aws-s3';
+import { BucketDeployment, Source } from '@aws-cdk/aws-s3-deployment';
+import { App, Stack, StackProps } from '@aws-cdk/core';
 import * as path from 'path';
+import { TodoBackend } from './todoBackend/todo-backend';
 
-import * as lambda from '@aws-cdk/aws-lambda';
-import * as cdk from '@aws-cdk/core';
-import * as apiGateway from '@aws-cdk/aws-apigateway';
-import { FunctionProps } from '@aws-cdk/aws-lambda';
-
-export class TodoAppStack extends cdk.Stack {
-	constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
+export class TodoAppStack extends Stack {
+	constructor(scope: App, id: string, props?: StackProps) {
 		super(scope, id, props);
 
-		const helloLambda = new lambda.Function(this, 'HelloLambda', {
-			code: lambda.Code.fromAsset(path.join(__dirname, 'lambda')),
-			handler: 'hello.handler',
-			runtime: lambda.Runtime.NODEJS_14_X,
-			memorySize: 256,
-			environment: { isProduction: "maybe" }
-		} as FunctionProps);
+		// Instantiate backend Construct
+		const todoBackend = new TodoBackend(this, 'TodoBackend');
 
-		new apiGateway.LambdaRestApi(this, 'Endpoint', {
-			handler: helloLambda,
+		// Setup gateway API
+		const api = new LambdaRestApi(this, 'TodoApi', {
+			handler: todoBackend.handler,
+			proxy: false,
+		});
+
+		api.root.addMethod('ANY');
+
+		const todos = api.root.addResource('todos');
+		todos.addMethod('GET');
+		todos.addMethod('POST');
+
+		const todo = todos.addResource('{id}');
+		todo.addMethod('DELETE');
+		todo.addMethod('PATCH');
+
+		// Create static asset bucket
+		const assetsBucket = new Bucket(this, 'assets', {
+			websiteIndexDocument: 'index.html',
+			publicReadAccess: true,
+		});
+
+		// Deploy assets
+		new BucketDeployment(this, 'assetsDeploy', {
+			destinationBucket: assetsBucket,
+			sources: [
+				Source.asset(path.join(__dirname, 'assets')),
+			],
 		});
 	}
 }

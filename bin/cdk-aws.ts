@@ -1,6 +1,5 @@
-#!/usr/bin/env node
-import * as cdk from '@aws-cdk/core';
-import { TodoAppStack } from "../lib/cdk-aws-stack";
+import { App } from '@aws-cdk/core';
+import { TodoAppStack } from '../lib/cdk-aws-stack';
 
-const app = new cdk.App();
-new TodoAppStack(app, "TodoAppStack");
+const app = new App();
+new TodoAppStack(app, 'TodoAppStack');
