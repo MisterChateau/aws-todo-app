@@ -1,7 +1,16 @@
-# Welcome to your CDK TypeScript project!
+# Prerequisites
 
-You should explore the contents of this project. It demonstrates a CDK app with an instance of a stack (`CdkAwsStack`)
-which contains an Amazon SQS queue that is subscribed to an Amazon SNS topic.
+Install aws cli
+Create a user in IAM and provide access-key ID and secret with
+>$ aws configure
+
+Install aws-cdk
+>$ npm install aws-cdk
+
+
+# CDK project
+It demonstrates a CDK app with an instance of a stack (`CdkAwsStack`)
+which contains Lamba, API gateway and DynamoDb
 
 The `cdk.json` file tells the CDK Toolkit how to execute your app.
 
